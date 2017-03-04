@@ -1,0 +1,4 @@
+2c2
+< CustomLog ${APACHE_LOG_DIR}/other_vhosts_access.log vhost_combined
+---
+> CustomLog ${APACHE_LOG_DIR}/other_vhosts_access.log vhost_combined env=!dontlog

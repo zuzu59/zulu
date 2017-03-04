@@ -1,0 +1,5 @@
+22c22,23
+< export APACHE_LOG_DIR=/var/log/apache2$SUFFIX
+---
+> #export APACHE_LOG_DIR=/var/log/apache2$SUFFIX
+> export APACHE_LOG_DIR=/home/zulu/log/ramfs/apache2$SUFFIX

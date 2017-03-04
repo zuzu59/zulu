@@ -1,0 +1,12 @@
+*** .bashrc.org	2012-07-27 22:10:11.838407858 +0200
+--- .bashrc	2012-07-27 22:10:17.135364123 +0200
+***************
+*** 100,103 ****
+--- 100,106 ----
+  #export LC_MESSAGES="en_US.UTF-8"
+  #export LANGUAGE="en_US:en"
+  #export LANG="en_US"
++ keychain -q ; . ~/.keychain/$HOSTNAME-sh
++ echo -e $HOSTNAME" ssh-add..."
++ ssh-add
+  

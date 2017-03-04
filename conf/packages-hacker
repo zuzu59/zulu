@@ -1,0 +1,14 @@
+curl
+build-essential
+nmap
+strace
+less
+whois
+dnsutils
+ipython
+wireless-tools
+tcpdump
+ngrep
+dsniff
+nbtscan
+tcpick

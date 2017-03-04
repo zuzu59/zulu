@@ -1,0 +1,52 @@
+#zf120723.1644
+
+<VirtualHost *:443>
+        ServerName localhost
+	DocumentRoot /var/www
+
+        SSLEngine On
+        SSLCertificateKeyFile ssl/apache.pem
+        SSLCertificateFile ssl/apache.pem
+
+        ProxyRequests Off
+        <Proxy *>
+               Order deny,allow
+               Allow from all
+        </Proxy>
+
+
+        ProxyPass /zanyterm/ http://localhost:8023/
+        ProxyPassReverse /zanyterm/ http://localhost:8023/
+
+<Location /zanyterm>
+	SetEnv dontlog 
+
+#Laliste des attributs se trouve sur: http://tequila.epfl.ch/cgi-bin/tequila/serverinfo
+        TequilaService  "Anyterm"
+        #TequilaAllowNet 128.178        
+        #TequilaAllowIf droit-intranet
+        TequilaAllowIf group=DIT
+        #TequilaAllowIf unit=dit-sup
+        #TequilaRequest uniqueid name firstname
+        #TequilaAllowIf  uniqueid=104899&org=EPFL
+</Location>
+
+
+        ProxyPass /zajaxterm/ http://localhost:8022/
+        ProxyPassReverse /zajaxterm/ http://localhost:8022/
+
+<Location /zajaxterm>
+        AuthUserFile /etc/apache2/zaccess/.auth.zajaxterm
+        AuthGroupFile /dev/null
+        AuthName "Acces restreint"
+        AuthType Basic
+        Require valid-user
+</Location>
+
+
+
+
+
+ </VirtualHost>
+
+

@@ -1,0 +1,10 @@
+#! /bin/sh
+#
+# init.zpack
+# zf 120505.2031
+# Patch certaines choses pour le zpack au moment du boot de la machine
+#
+
+# Pour l'utilisation sans sudo de tpb (thinkpad buttons)
+chmod 664 /dev/nvram
+

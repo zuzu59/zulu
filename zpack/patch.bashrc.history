@@ -1,0 +1,4 @@
+9c9
+< HISTCONTROL=ignoreboth,erasedups
+---
+> HISTCONTROL=ignorespace:erasedups

@@ -1,0 +1,10 @@
+16,17c16,17
+< background_style        stretch
+< background_color        #eedddd
+---
+> background_style        center
+> background_color        #000000
+21c21
+< input_panel_y           50%
+---
+> input_panel_y           80%

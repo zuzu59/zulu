@@ -1,0 +1,161 @@
+#!/bin/bash
+#
+### BEGIN INIT INFO
+# Provides:          gconf-ram
+# Required-Start:    $remote_fs $local_fs
+# Required-Stop:     $remote_fs $local_fs
+# Default-Start:     2
+# Default-Stop:      0 6
+# Short-Description: Move user configuration to RAM
+# Description:       Move .gconf, .cache and .config to RAM and back when computer is turned off
+### END INIT INFO
+#
+# main()
+#
+
+RAMFS='/dev/shm'
+VERSION=0.9.120628.1301.120629.2317
+
+get_pids(){
+    serv=$1
+    user=$2
+    # FIXME: use of -p ^$(echo $PPID),^$(echo $$)
+    echo $(lsof -n -b 2> /dev/null | grep $serv | awk '{print $2}' | uniq)
+}
+
+kill_pid(){
+    SIG=$1
+    PIDS=$2
+    if [ "$PIDS" != "" ]; then
+        for pid in $PIDS; do 
+            kill -$SIG $pid
+        done
+    fi
+}
+
+to_ram(){
+    serv="$1"
+    user="$2"
+    preserve="$3"
+
+    # STOP processes using this directory
+    PIDS=$(get_pids $serv $user)
+    kill_pid STOP "$PIDS"
+
+    # Initialize
+    unlink "$serv"
+    mkdir -p "$RAMFS$serv"
+    chown $user:$user "$RAMFS$serv"
+    
+    if [ "$preserve" == "yes" ];then
+        # Merge serv and serv-orig
+        if [ -d "${serv}-orig" ]; then
+            rsync -a "${serv}-orig/" "$serv/"
+            rm -fr "${serv}-orig"
+        fi
+        # Copy files
+        rsync -ax --delete --checksum --out-format='  %n' "$serv/" "$RAMFS$serv/"
+
+        # Move serv to serv-orig # Must be atomic :(
+        if [ -d "$serv/" ]; then
+            mv "$serv/" "${serv}-orig/"
+        else
+            mkdir -p "${serv}-orig/"
+            chown $user:$user "${serv}-orig"
+        fi
+    else
+        rm -rf "$serv"
+    fi
+   
+    # Link local to ram and set perms
+    ln -s "$RAMFS$serv" "$serv"
+    
+    # Continue the process using the file
+    kill_pid CONT "$PIDS"
+}
+
+to_disk(){
+    serv="$1"
+    user="$2"
+    preserve="$3"
+
+    # STOP processes using this directory
+    PIDS=$(get_pids $serv $user)
+    kill_pid STOP "$PIDS"
+
+    unlink "$serv"
+    if [ "$preserve" == "yes" ]; then
+        if [ -d "$RAMFS$serv" ]; then
+            rsync -ax --delete --checksum --out-format='  %n' "$RAMFS$serv/" "${serv}-orig/"
+        fi
+        if [ -d "$serv/" -a -d "${serv}-orig/" ]; then
+            rsync -a "${serv}-orig/" "$serv/"
+            rm -fr "${serv}-orig/"
+        elif [ -d "${serv}-orig/" ]; then
+            mv "${serv}-orig/" "$serv/"
+        fi
+    fi
+    
+    # Continue the process using the file
+    kill_pid CONT "$PIDS"
+}
+
+do_start(){
+    echo "Copying user configuration to $RAMFS..."
+    # Users
+    rm -fr "$RAMFS/home"
+    for home in /home/*; do
+        user="${home##*/}"
+        to_ram "/home/$user/.gconf" "$user" "yes"
+        to_ram "/home/$user/.config" "$user" "yes"
+        to_ram "/home/$user/.mozilla" "$user" "yes"
+        to_ram "/home/$user/log/ramfs" "$user" "yes"
+        to_ram "/home/$user/.cache/chromium" "$user"
+        to_ram "/home/$user/.cache/iceweasel" "$user"
+    done
+    # System
+    #to_ram '/home/zulu/log/ramfs' "nagios" "yes" 
+    echo 'done.'
+}
+
+do_stop(){
+    echo "Copying user configuration back to the disk..."
+    # Users
+    for home in /home/*; do
+        user="${home##*/}"
+        to_disk "/home/$user/.gconf" "$user" "yes"
+        to_disk "/home/$user/.config" "$user" "yes"
+        to_disk "/home/$user/.mozilla" "$user" "yes"
+        to_disk "/home/$user/log/ramfs" "$user" "yes"
+        to_disk "/home/$user/.cache/chromium" "$user"
+        to_disk "/home/$user/.cache/iceweasel" "$user"
+    done
+    rm -fr "$RAMFS/home"
+    # System
+    #to_disk '/home/zulu/log/ramfs' "nagios" "yes"
+    echo 'done.'
+}
+
+exec 2> /var/log/ramfs
+case "${1:-''}" in
+    'start')
+        do_start
+        ;;
+    'stop')
+        do_stop
+        ;;
+    'restart')
+        do_stop
+        do_start
+        ;;
+    'reload'|'force-reload')
+        ;;
+    'status')
+        NB=$(find $RAMFS | wc -l)
+        echo "$NB files in $RAMFS"
+        ;;
+    *)
+        echo "Usage: $SELF {start|stop|restart|status}"
+        exit 1
+        ;;
+esac

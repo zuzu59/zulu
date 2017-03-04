@@ -1,0 +1,8 @@
+11c11
+< AutoplayAudioCdCommand=totem %d
+---
+> AutoplayAudioCdCommand=vlc cdda:///dev/sr0
+13c13
+< AutoplayVideoCdCommand=totem %d
+---
+> AutoplayVideoCdCommand=vlc %d

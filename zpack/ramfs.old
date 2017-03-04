@@ -1,0 +1,128 @@
+#!/bin/bash
+#
+### BEGIN INIT INFO
+# Provides:          gconf-ram
+# Required-Start:    $remote_fs 
+# Required-Stop:     $remote_fs 
+# Default-Start:     2
+# Default-Stop:      0 1 6
+# Short-Description: Move user configuration to RAM
+# Description:       Move .gconf, .cache and .config to RAM and back when computer is turned off
+### END INIT INFO
+#
+# main()
+#
+
+RAMFS='/dev/shm'
+VERSION=0.9.120531.1158
+
+to_ram(){
+    serv="$1"
+    home="$2"
+    preserve="$3"
+    user=${home##*/}
+
+    # Initialize
+    unlink "$home/$serv"
+    mkdir "$RAMFS/$user"
+    
+    if [ "$preserve" == "yes" ];then
+        # Merge serv and serv-orig
+        if [ -d "$home/${serv}-orig" ]; then
+            rsync -a "$home/${serv}-orig/" "$home/$serv/"
+            rm -fr "$home/${serv}-orig"
+        fi
+        # Copy files
+        rsync -ax --delete --checksum --out-format='  %n' "$home/$serv/" "$RAMFS/$user/$serv/"
+
+        # Move serv to serv-orig # Must be atomic :(
+        if [ -d "$home/$serv/" ]; then
+            mv "$home/$serv/" "$home/${serv}-orig/"
+        else
+            mkdir -p "$home/${serv}-orig/"
+            chown $user:$user "$home/${serv}-orig"
+        fi
+    else
+        rm -rf "$home/$serv"
+        mkdir -p "$RAMFS/$user/$serv/"
+    fi
+   
+    # Link local to ram and set perms
+    ln -s "$RAMFS/$user/$serv" "$home/$serv"
+    chown -R $user:$user "$RAMFS/$user"
+}
+
+to_disk(){
+    serv="$1"
+    home="$2"
+    preserve="$3"
+    user=${home##*/}
+    unlink "$home/$serv"
+    if [ "$preserve" == "yes" ]; then
+        if [ -d "$RAMFS/$user/$serv" ]; then
+            rsync -ax --delete --checksum --out-format='  %n' "$RAMFS/$user/$serv/" "$home/${serv}-orig/"
+        fi
+        if [ -d "$home/$serv/" -a -d "$home/${serv}-orig/" ]; then
+            rsync -a "$home/${serv}-orig/" "$home/$serv/"
+            rm -fr "$home/${serv}-orig/"
+        elif [ -d "$home/${serv}-orig/" ]; then
+            mv "$home/${serv}-orig/" "$home/$serv/"
+        fi
+    fi
+}
+
+do_start(){
+    echo "Copying user configuration to $RAMFS..."
+    for home in /home/*; do
+        if [ ! -d "$RAMFS/${home##*/}" ]; then
+            to_ram '.gconf' $home "yes"
+            pkill -SIGSTOP -f chromium-browser*
+            pkill -SIGSTOP -f thunar
+            to_ram '.config' $home "yes"
+            to_ram 'log/ramfs' $home "yes"
+            pkill -SIGCONT -f chromium-browser*
+            pkill -SIGCONT -f thunar
+            to_ram '.cache/chromium' $home
+        fi
+    done
+    echo 'done.'
+}
+
+do_stop(){
+    echo "Copying user configuration back to the disk..."
+    for home in /home/*; do
+        to_disk '.gconf' $home "yes"
+        pkill -SIGSTOP -f chromium-browser*
+        pkill -SIGSTOP -f thunar
+        to_disk '.config' $home "yes"
+        to_disk 'log/ramfs' $home "yes"
+        pkill -SIGCONT -f chromium-browser*
+        pkill -SIGCONT -f thunar
+        to_disk '.cache/chromium' $home
+        rm -fr "$RAMFS/${home##*/}"
+    done
+    echo 'done.'
+}
+
+exec 2> /dev/null
+case "${1:-''}" in
+    'start')
+        do_start
+        ;;
+    'stop')
+        do_stop
+        ;;
+    'restart')
+        do_stop
+        do_start
+        ;;
+    'reload'|'force-reload')
+        ;;
+    'status')
+        ls $RAMFS
+        ;;
+    *)
+        echo "Usage: $SELF {start|stop|restart|status}"
+        exit 1
+        ;;
+esac

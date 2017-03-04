@@ -1,0 +1,73 @@
+Zulu Update 2016
+zf160622.1621,160913.2234
+
+Update des dépôts
+Update du FireFox
+Email pense bête que j'avais envoyé à Dudu
+
+
+
+
+
+Update des dépôts
+Afin de pouvoir continuer à installer des logiciels sur Zulu, il faut updater les dépôts, car ils ne sont plus au même endroit !
+
+Il faut modifier le fichier /etc/apt/sources.list comme suit:
+
+deb http://archive.debian.org/debian squeeze main contrib non-free
+#deb http://backports.debian.org/debian-backports squeeze-backports main non-free contrib
+#deb http://ftp.ch.debian.org/debian/ squeeze main contrib non-free
+deb http://ppa.launchpad.net/chromium-daily/ppa/ubuntu lucid main
+deb http://security.debian.org/ squeeze/updates main contrib non-free
+#deb http://www.deb-multimedia.org squeeze main non-free
+deb http://www.duinsoft.nl/pkg debs all
+
+Puis après faire un:
+
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get clean
+sudo apt-get autoclean
+sudo apt-get autoremove
+sudo apt-get purge
+
+
+
+Update du FireFox
+Il faut installer à la mano la dernière version de FireFox qui fonctionne avec Zulu, c'est à dire la 45.1:
+
+https://ftp.mozilla.org/pub/firefox/releases/45.1.1esr/linux-i686/fr/
+
+En copiant simplement le dossier FireFox dans ce dossier:
+
+/opt/firefox
+
+
+
+
+Email pense bête que j'avais envoyé à Dudu
+
+Hello,
+
+Ben qui l'aurait cru ? Zulu Linux est toujours vivant !
+
+J'ai dû me faire une clef USB Linux bootable pour un futur atelier Arduino/Processing et j'ai voulu tester la Framakey en me disant qu'ils auraient évolué et qu'il faut prendre maintenant un OS moderne !
+
+Ben non c'est toujours la même merde ;-(
+
+J'ai ressorti donc mon vieux Lenovo où j'avais une version de Zulu Linux potable, vu que c'est celle-ci que j'utilisais à l'époque avant de basculer dans la force sombre d'Apple et essayé de la remettre un peu debout.
+
+J'ai pu très facilement trouver le dépôt d'archive pour Debian 6 afin de le mettre à jour à la dernière version, par contre j'ai galéré un bon moment pour avoir un browser moderne. Firefox me disait qu'il était à jour mais en version 22 seulement et Google Drive ne l'acceptait plus.
+Finalement j'ai trouvé la distrib complète de Firefox et j'ai pu prendre l'avant dernière qui tourne encore sur Debian 6, la 45.1.1
+
+J'ai installé le dernier IDE Arduino, j'ai galéré à nouveau car je n'avais pas la ncurse-dev d'installé ;-(
+
+J'ai installé le dernier Processing P5, fastoche car mon utilitaire de mise à jour de Java utilisé sur Zulu fonctionne toujours ;-)
+
+Et... j'ai maintenant une superbe machine Linux de développement pour ateliers Arduino/Processing à jour et sacrement performante, elle boote toujours en moins de 40 secondes et la gestion du ventilateur est une merveille ;-)
+
+Et je vous parle pas du truc le plus important: l'utilitaire duplicate.sh ;-))))))
+
+Bref, Zulu Linux est toujours vivant et bien là, quelle belle preuve de résistance, dans ce monde à la con de course à toujours plus de puissance !
+
+

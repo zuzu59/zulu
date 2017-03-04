@@ -1,0 +1,12 @@
+8c8
+< # This file belongs to the "initscripts" package.
+---
+> # This file belongs to the "initscripts" package zf120523.1617
+21c21
+< UTC=yes
+---
+> UTC=no
+27c27
+< FSCKFIX=no
+---
+> FSCKFIX=yes

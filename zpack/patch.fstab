@@ -1,0 +1,4 @@
+2c2
+< tmpfs          /tmp                     tmpfs      defaults,noexec,nosuid       0     0
+---
+> tmpfs          /tmp                     tmpfs      defaults,relatime            0     0

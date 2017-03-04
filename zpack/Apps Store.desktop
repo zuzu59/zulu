@@ -1,0 +1,12 @@
+
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Type=Application
+Name=Apps Store
+Comment=
+Categories=Application;
+Exec=xfce4-appfinder
+Icon=system-software-install
+Terminal=false
+StartupNotify=false
